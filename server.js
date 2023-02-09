@@ -1,57 +1,51 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const bodyParser = require('body-parser');
-const webrtc = require("wrtc");
+const fs = require("fs");
 
-let senderStream;
-
-app.use(express.static('public'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.post("/consumer", async ({ body }, res) => {
-    const peer = new webrtc.RTCPeerConnection({
-        iceServers: [
-            {
-                urls: "stun:stun.stunprotocol.org"
-            }
-        ]
-    });
-    const desc = new webrtc.RTCSessionDescription(body.sdp);
-    await peer.setRemoteDescription(desc);
-    senderStream.getTracks().forEach(track => peer.addTrack(track, senderStream));
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    const payload = {
-        sdp: peer.localDescription
-    }
-
-    res.json(payload);
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + "/index.html");
 });
 
-app.post('/broadcast', async ({ body }, res) => {
-    const peer = new webrtc.RTCPeerConnection({
-        iceServers: [
-            {
-                urls: "stun:stun.stunprotocol.org"
-            }
-        ]
-    });
-    peer.ontrack = (e) => handleTrackEvent(e, peer);
-    const desc = new webrtc.RTCSessionDescription(body.sdp);
-    await peer.setRemoteDescription(desc);
-    const answer = await peer.createAnswer();
-    await peer.setLocalDescription(answer);
-    const payload = {
-        sdp: peer.localDescription
-    }
+app.get("/video", function (req, res) {
+  console.log(req.headers);
 
-    res.json(payload);
+  // Ensure there is a range given for the video
+  const range = req.headers.range;
+  if (!range) {
+    res.status(400).send("Requires Range header");
+  }
+
+  // get video stats (about 11MB)
+  const videoPath = "wait.mkv";
+  const videoSize = fs.statSync(videoPath).size;
+  console.log(videoSize);
+
+  // Parse Range
+  // Example: 'bytes=6750208-'
+  const CHUNK_SIZE = 5 * 10 ** 5; // ~500 KB => 500000 Bytes
+  const start = Number(range.replace(/\D/g, "")); // 'bytes=6750208-' => 6750208
+  const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
+  console.log(start, end);
+
+  // Create headers
+  const contentLength = end - start + 1;
+  const headers = {
+    "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+    "Accept-Ranges": "bytes",
+    "Content-Length": contentLength,
+    "Content-Type": "video/mp4",
+  };
+
+  // HTTP Status 206 for Partial Content
+  res.writeHead(206, headers);
+
+  // create video read stream for this particular chunk
+  const videoStream = fs.createReadStream(videoPath, { start, end });
+
+  // Stream the video chunk to the client
+  videoStream.pipe(res);
 });
 
-function handleTrackEvent(e, peer) {
-    senderStream = e.streams[0];
-};
-
-
-app.listen(5000, () => console.log('server started'));
+app.listen(8000, function () {
+  console.log("Listening on port 8000!");
+});
