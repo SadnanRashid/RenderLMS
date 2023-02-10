@@ -1,8 +1,24 @@
 {
   "dependencies": {
     "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "@mapbox/node-pre-gyp": "1.x",
-    "wrtc": "^0.4.7"
-  }
+    "express": "^4.17.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "name": "fly",
+  "description": "to run the app",
+  "version": "1.0.0",
+  "main": "server.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SadnanRashid/RenderLMS.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SadnanRashid/RenderLMS/issues"
+  },
+  "homepage": "https://github.com/SadnanRashid/RenderLMS#readme"
 }

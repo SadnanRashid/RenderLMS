@@ -1,6 +1,6 @@
-# fly.toml file generated for late-water-6427 on 2022-10-01T21:08:42+06:00
+# fly.toml file generated for twilight-feather-8554 on 2023-02-10T01:52:52+06:00
 
-app = "late-water-6427"
+app = "twilight-feather-8554"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
@@ -8,15 +8,10 @@ processes = []
 [build]
   builder = "heroku/buildpacks:20"
 
-
-[build.args]
-  NODE_VERSION = "14"
-
 [env]
-  PORT = "8080"
+  PORT = "8000"
 
 [experimental]
-  allowed_public_ports = []
   auto_rollback = true
 
 [[services]]
